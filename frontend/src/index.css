@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+
+body {
+  overflow-x: hidden;
+}
+
+/* .box{
+  @apply text-red-500 text-5xl
+} */
+
+.my-slider-progress {
+  background: #ccc;
+  height: 4px;
+  position: relative;
+  margin-top: 10px;
+}
+
+.my-slider-progress-bar {
+  background: greenyellow;
+  height: 80%;
+  transition: width 400ms ease;
+  width: 0;
+}
+
+
+/* Custom Scrollbar for the entire application */
+::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+  height: 8px; /* Height of the scrollbar (for horizontal scrollbars) */
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #10b981, #047857); /* Emerald gradient */
+  border-radius: 4px; /* Rounded corners */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #047857, #065f46); /* Darker emerald on hover */
+}
+
+::-webkit-scrollbar-track {
+  background: #1f2937; /* Dark gray background for the track */
+  border-radius: 4px;
+}
+
+/* Custom Scrollbar for the Category Sidebar */
+.fixed.overflow-y-auto::-webkit-scrollbar {
+  width: 6px; /* Thinner scrollbar for the sidebar */
+}
+
+.fixed.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #10b981, #047857); /* Emerald gradient */
+  border-radius: 4px;
+}
+
+.fixed.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #047857, #065f46); /* Darker emerald on hover */
+}
+
+.fixed.overflow-y-auto::-webkit-scrollbar-track {
+  background: #111827; /* Darker gray for the sidebar track */
+  border-radius: 4px;
+}
