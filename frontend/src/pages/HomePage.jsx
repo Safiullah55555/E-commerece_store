@@ -17,13 +17,15 @@ const categories = [
 ]
 
 const HomePage = () => {
-  const { fetchFeaturedProducts, products, isLoading, fetchAllProducts, allProducts } = useProductStore();
+  const { fetchFeaturedProducts, products, isLoading, fetchAllProducts, searchResults } = useProductStore();
   const [groupedProducts, setGroupedProducts] = useState({});
   const [isSidebarVisible, setIsSidebarVisible] = useState(false)
 
   useEffect(() => {
-    fetchFeaturedProducts()
-    fetchAllProducts()
+    if (searchResults === null) {
+      fetchFeaturedProducts()
+      fetchAllProducts()
+    }
   }, [fetchFeaturedProducts, fetchAllProducts])
 
   function shuffleArray(array) {
@@ -35,15 +37,33 @@ const HomePage = () => {
     return newArray;
   }
 
+  // useEffect(() => {
+  //   const grouped = products.reduce((acc, product) => {
+  //     const category = product.category || "Uncategorized";
+  //     if (!acc[category]) {
+  //       acc[category] = []
+  //     }
+  //     acc[category].push(product);
+  //     return acc;
+  //   }, {});
+
   useEffect(() => {
-    const grouped = products.reduce((acc, product) => {
+    const sourceProducts = searchResults !== null ? searchResults : products;
+
+    if (sourceProducts.length === 0 && searchResults !== null) {
+      setGroupedProducts({});
+      return;
+    }
+
+    const grouped = sourceProducts.reduce((acc, product) => {
       const category = product.category || "Uncategorized";
       if (!acc[category]) {
-        acc[category] = []
+        acc[category] = [];
       }
       acc[category].push(product);
       return acc;
     }, {});
+
 
     // Shuffle products in each category
     Object.keys(grouped).forEach(category => {
@@ -51,14 +71,14 @@ const HomePage = () => {
     });
 
     setGroupedProducts(grouped);
-  }, [products])
+  }, [products, searchResults]);
 
-  
+
 
   return (
     <div className='relative min-h-screen text-white overflow-hidden flex'>
       <button
-        className="fixed top-4 left-4 z-20 bg-green-700 text-white px-4 py-2 pt-19 rounded-md hover:bg-green-400 font-bold"
+        className="fixed top-20 md:top-4 left-4 z-20 bg-green-700 text-white px-4 py-2 pt-19 rounded-md hover:bg-green-400 font-bold"
         onClick={() => setIsSidebarVisible(!isSidebarVisible)}
       >
 
@@ -86,29 +106,37 @@ const HomePage = () => {
 
         {/* all Products , this must be there not in any component */}
         <div className="lg:grid-cols-2 xl:grid-cols-2 bg-[#e2e6e7]">
-          {Object.keys(groupedProducts).map((categoryName) => (
-            <div key={categoryName} className="mt-8">
-              <h2 className="text-3xl font-semibold mb-4 pl-2 text-black font-bold">{categoryName.toUpperCase()}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
-                {
-                  groupedProducts[categoryName].slice(0, 8).map((product) => (
-                    <ProductCard key={product._id} product={product} />
-                  ))
-                }
-              </div>
-
-              <div className="flex justify-end mt-2 pr-2">
-                <Link
-                  to={`/category/${encodeURIComponent(categoryName)}`}
-                  className="text-blue-600 hover:underline"
-                >
-                  See More
-                </Link>
-              </div><br />
-                <hr className="text-black pb-5 font-bold "/>
-
+          {Object.keys(groupedProducts).length === 0 && searchResults !== null ? (
+            <div className="text-center text-black text-2xl font-semibold py-10">
+              Product not found
             </div>
-          ))}
+          ) : (
+            Object.keys(groupedProducts).map((categoryName) => (
+              <div key={categoryName} className="mt-8">
+                <h2 className="text-3xl font-semibold mb-4 pl-2 text-black font-bold">
+                  {categoryName.toUpperCase()}
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
+                  {groupedProducts[categoryName]
+                    .slice(0, 8)
+                    .map((product) => (
+                      <ProductCard key={product._id} product={product} />
+                    ))}
+                </div>
+
+                <div className="flex justify-end mt-2 pr-2">
+                  <Link
+                    to={`/category/${encodeURIComponent(categoryName)}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    See More
+                  </Link>
+                </div>
+                <br />
+                <hr className="text-black pb-5 font-bold " />
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

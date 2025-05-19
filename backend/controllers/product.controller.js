@@ -193,4 +193,80 @@ export const getProductById = async (req, res) => {
           res.status(500).json({ message: "Server error", error: error.message });
         }
       };
+
+// Search products by name or description
+export const searchProducts = async (req, res) => {
+        const { q } = req.query;
+        if (!q) {
+          return res.status(400).json({ message: "Search query parameter 'q' is required" });
+        }
+        try {
+          const regex = new RegExp(q, "i"); // case-insensitive search
+          const products = await Product.find({
+            $or: [{ name: regex }, { description: regex }],
+          });
+          res.json({ products });
+        } catch (error) {
+          console.log("error in searchProducts controller:", error.message);
+          res.status(500).json({ message: "Server error", error: error.message });
+        }
+      };
+    
+// Update/edit a product by ID
+
+export const updateProduct = async (req, res) => {
+       
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const { name, description, price, image, category, additionalImages } = req.body;
+
+    // Delete old main image if changed
+    if (image && image !== product.image && product.image) {
+      const publicId = extractPublicId(product.image);
+      await cloudinary.uploader.destroy(publicId);
+    }
+
+    // Delete removed additional images
+    if (additionalImages) {
+      const removedImages = product.additionalImages.filter(
+        img => img && !additionalImages.includes(img)
+      );
+      for (const imgUrl of removedImages) {
+        if (imgUrl) {
+          const publicId = extractPublicId(imgUrl);
+          await cloudinary.uploader.destroy(publicId);
+        }
+      }
+    }
+
+    // Update product fields only if provided
+    if (name !== undefined) product.name = name;
+    if (description !== undefined) product.description = description;
+    if (price !== undefined) product.price = price;
+    if (image !== undefined) product.image = image;
+    if (category !== undefined) product.category = category;
+    if (additionalImages !== undefined) {
+      // Filter out null/empty values
+      product.additionalImages = additionalImages.filter(Boolean);
+    }
+
+    const updatedProduct = await product.save();
+    res.json(updatedProduct);
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+// Helper function to extract Cloudinary public ID from URL
+const extractPublicId = (url) => {
+  const parts = url.split('/');
+  const fileName = parts[parts.length - 1];
+  return fileName.split('.')[0];
+};
+
+      
       
